@@ -72,4 +72,41 @@ ALearningToRaceSportsCar::ALearningToRaceSportsCar()
 void ALearningToRaceSportsCar::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->AddAgent(this);
+}
+
+void ALearningToRaceSportsCar::ResetToRandomPointOnSpline(USplineComponent* TrackSpline)
+{
+	FTransform CandidateTransform;
+	bool bInvalidTransform = true;
+	while (bInvalidTransform)
+	{
+		float RandomX = (UKismetMathLibrary::RandomFloat() - 0.5f) * 1200.0f;
+		float RandomY = (UKismetMathLibrary::RandomFloat() - 0.5f) * 1200.0f;
+		FVector RandomOffset = UKismetMathLibrary::MakeVector(RandomX, RandomY, 50.0f);
+
+		float RandomSpline = UKismetMathLibrary::RandomFloat();
+		float RandomRotation = (UKismetMathLibrary::RandomFloat() - 0.5f) * 90.0f;
+		float SplineLength = TrackSpline->GetSplineLength();
+		float SplineDistance = RandomSpline * SplineLength;
+		FVector SplineLocation = TrackSpline->GetLocationAtDistanceAlongSpline(SplineDistance, ESplineCoordinateSpace::World);
+		FRotator SplineRotation = TrackSpline->GetRotationAtDistanceAlongSpline(SplineDistance, ESplineCoordinateSpace::World);
+
+		CandidateTransform = UKismetMathLibrary::MakeTransform(SplineLocation + RandomOffset, FRotator(0.0f, SplineRotation.Yaw + RandomRotation, 0.0f));
+		bInvalidTransform = false;
+		TArray<AActor*> OutCars;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALearningToRaceSportsCar::StaticClass(), OutCars);
+		for (AActor* Car : OutCars)
+		{
+			if (UKismetMathLibrary::Vector_Distance(CandidateTransform.GetLocation(), Car->GetActorLocation()) < 1500.0f)
+			{
+				bInvalidTransform = true;
+				break;
+			}
+		}
+	}
+	SetActorTransform(CandidateTransform, false, nullptr, ETeleportType::TeleportPhysics);
+	GetMesh()->SetPhysicsAngularVelocityInDegrees(FVector(0.0f, 0.0f, 0.0f), false, TEXT("None"));
+	GetMesh()->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, 0.0f), false, TEXT("None"));
 }
