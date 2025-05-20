@@ -34,8 +34,8 @@ void ASportsCarManager::BeginPlay()
 	Environment = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(Manager, USportsCarTrainingEnv::StaticClass());
 	Cast<USportsCarTrainingEnv>(Environment)->TrackSpline = TrackSpline;
 
-	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess();
-	Communicator = ULearningAgentsCommunicatorLibrary::MakeSharedMemoryCommunicator(TrainerProcess);
+	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess(TrainerProcessSettings, SharedMemoryCommunicatorSettings);
+	Communicator = ULearningAgentsCommunicatorLibrary::MakeSharedMemoryCommunicator(TrainerProcess, SharedMemoryCommunicatorSettings);
 	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(Manager, Interactor, Environment, Policy, Critic, Communicator, ULearningAgentsPPOTrainer::StaticClass(), TEXT("SportsCarPPOTrainer"), PPOTrainerSettings);
 
 	if (!bShouldRunInference)

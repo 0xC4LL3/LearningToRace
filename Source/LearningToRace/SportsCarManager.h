@@ -34,6 +34,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	FLearningAgentsCriticSettings CriticSettings;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FLearningAgentsTrainerProcessSettings TrainerProcessSettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemoryCommunicatorSettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	FLearningAgentsPPOTrainerSettings PPOTrainerSettings;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	FLearningAgentsPPOTrainingSettings PPOTrainingSettings;
