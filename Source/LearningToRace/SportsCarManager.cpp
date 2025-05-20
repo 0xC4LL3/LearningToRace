@@ -29,19 +29,24 @@ void ASportsCarManager::BeginPlay()
 	Interactor = ULearningAgentsInteractor::MakeInteractor(Manager, USportsCarInteractor::StaticClass(), TEXT("SportsCarInteractor"));
 	Cast<USportsCarInteractor>(Interactor)->TrackSpline = TrackSpline;
 
-	Policy = ULearningAgentsPolicy::MakePolicy(Manager, Interactor, ULearningAgentsPolicy::StaticClass(), TEXT("SportsCarPolicy"), EncoderNetwork, PolicyNetwork, DecoderNetwork);
-	Critic = ULearningAgentsCritic::MakeCritic(Manager, Interactor, Policy, ULearningAgentsCritic::StaticClass(), TEXT("SportsCarCritic"), CriticNetwork);
+	Policy = ULearningAgentsPolicy::MakePolicy(Manager, Interactor, ULearningAgentsPolicy::StaticClass(), TEXT("SportsCarPolicy"), EncoderNetwork, PolicyNetwork, DecoderNetwork, !bShouldRunInference, !bShouldRunInference, !bShouldRunInference, PolicySettings);
+	Critic = ULearningAgentsCritic::MakeCritic(Manager, Interactor, Policy, ULearningAgentsCritic::StaticClass(), TEXT("SportsCarCritic"), CriticNetwork, !bShouldRunInference, CriticSettings);
 	Environment = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(Manager, USportsCarTrainingEnv::StaticClass());
 	Cast<USportsCarTrainingEnv>(Environment)->TrackSpline = TrackSpline;
 
 	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess();
 	Communicator = ULearningAgentsCommunicatorLibrary::MakeSharedMemoryCommunicator(TrainerProcess);
-	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(Manager, Interactor, Environment, Policy, Critic, Communicator, ULearningAgentsPPOTrainer::StaticClass());
+	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(Manager, Interactor, Environment, Policy, Critic, Communicator, ULearningAgentsPPOTrainer::StaticClass(), TEXT("SportsCarPPOTrainer"), PPOTrainerSettings);
 
-	/*for (AActor* Car : CarActors)
+	if (!bShouldRunInference)
+	{
+		return;
+	}
+
+	for (AActor* Car : CarActors)
 	{
 		Cast<ALearningToRaceSportsCar>(Car)->ResetToRandomPointOnSpline(TrackSpline);
-	}*/
+	}
 }
 
 // Called every frame
@@ -49,5 +54,5 @@ void ASportsCarManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	PPOTrainer->RunTraining();
+	bShouldRunInference ? Policy->RunInference(0.0f) : PPOTrainer->RunTraining(PPOTrainingSettings, TrainingGameSettings);
 }

@@ -29,6 +29,18 @@ public:
 	ULearningAgentsNeuralNetwork* DecoderNetwork;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	ULearningAgentsNeuralNetwork* CriticNetwork;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FLearningAgentsPolicySettings PolicySettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FLearningAgentsCriticSettings CriticSettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FLearningAgentsPPOTrainerSettings PPOTrainerSettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FLearningAgentsPPOTrainingSettings PPOTrainingSettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FLearningAgentsTrainingGameSettings TrainingGameSettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	bool bShouldRunInference = false;
 
 	// Sets default values for this actor's properties
 	ASportsCarManager();
