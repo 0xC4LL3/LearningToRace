@@ -30,6 +30,13 @@ void ASportsCarManager::BeginPlay()
 	Cast<USportsCarInteractor>(Interactor)->TrackSpline = TrackSpline;
 
 	Policy = ULearningAgentsPolicy::MakePolicy(Manager, Interactor, ULearningAgentsPolicy::StaticClass(), TEXT("SportsCarPolicy"), EncoderNetwork, PolicyNetwork, DecoderNetwork, !bShouldRunInference, !bShouldRunInference, !bShouldRunInference, PolicySettings);
+	if (bShouldRunInference)
+	{
+		Policy->GetEncoderNetworkAsset()->LoadNetworkFromSnapshot(EncoderSnapshot);
+		Policy->GetPolicyNetworkAsset()->LoadNetworkFromSnapshot(PolicySnapshot);
+		Policy->GetDecoderNetworkAsset()->LoadNetworkFromSnapshot(DecoderSnapshot);
+	}
+
 	Critic = ULearningAgentsCritic::MakeCritic(Manager, Interactor, Policy, ULearningAgentsCritic::StaticClass(), TEXT("SportsCarCritic"), CriticNetwork, !bShouldRunInference, CriticSettings);
 	Environment = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(Manager, USportsCarTrainingEnv::StaticClass());
 	Cast<USportsCarTrainingEnv>(Environment)->TrackSpline = TrackSpline;

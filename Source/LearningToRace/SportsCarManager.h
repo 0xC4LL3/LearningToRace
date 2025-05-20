@@ -45,6 +45,12 @@ public:
 	FLearningAgentsTrainingGameSettings TrainingGameSettings;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	bool bShouldRunInference = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FFilePath EncoderSnapshot;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FFilePath PolicySnapshot;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	FFilePath DecoderSnapshot;
 
 	// Sets default values for this actor's properties
 	ASportsCarManager();
