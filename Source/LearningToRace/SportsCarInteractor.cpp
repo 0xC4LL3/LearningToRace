@@ -13,7 +13,7 @@ void USportsCarInteractor::SpecifyAgentObservation_Implementation(FLearningAgent
 	SchemaMapping.Add(TEXT("Direction"), DirectionSchema);
 
 	FLearningAgentsObservationSchemaElement TrackSchema = ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, SchemaMapping);
-	TrackSchema = ULearningAgentsObservations::SpecifyStaticArrayObservation(InObservationSchema, TrackSchema, trackDistances.Num());
+	TrackSchema = ULearningAgentsObservations::SpecifyStaticArrayObservation(InObservationSchema, TrackSchema, TrackDistances.Num());
 	
 	FLearningAgentsObservationSchemaElement VelocitySchema = ULearningAgentsObservations::SpecifyVelocityObservation(InObservationSchema);
 
@@ -29,27 +29,27 @@ void USportsCarInteractor::GatherAgentObservation_Implementation(FLearningAgents
 	UObject* AgentObject = Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->GetAgent(AgentId);
 	ALearningToRaceSportsCar* ObservationActor = Cast<ALearningToRaceSportsCar>(AgentObject);
 	
-	TArray<FLearningAgentsObservationObjectElement> trackObservations;
+	TArray<FLearningAgentsObservationObjectElement> TrackObservations;
 	TMap<FName, FLearningAgentsObservationObjectElement> ObjectMapping;
 	FVector Location = ObservationActor->GetActorLocation();
 	FTransform Transform = ObservationActor->GetActorTransform();
-	float distanceAlongSpline = TrackSpline->GetDistanceAlongSplineAtLocation(Location, ESplineCoordinateSpace::World);
-	bool isPlayerControlled = ObservationActor->IsPlayerControlled();
-	for(float trackDistance : trackDistances)
+	float DistanceAlongSpline = TrackSpline->GetDistanceAlongSplineAtLocation(Location, ESplineCoordinateSpace::World);
+	bool bIsPlayerControlled = ObservationActor->IsPlayerControlled();
+	for(float TrackDistance : TrackDistances)
 	{
-		float sampleDistance = distanceAlongSpline + trackDistance;
-		FVector locationAtDistanceAlongSpline = TrackSpline->GetLocationAtDistanceAlongSpline(sampleDistance, ESplineCoordinateSpace::World);
+		float SampleDistance = DistanceAlongSpline + TrackDistance;
+		FVector LocationAtDistanceAlongSpline = TrackSpline->GetLocationAtDistanceAlongSpline(SampleDistance, ESplineCoordinateSpace::World);
 		
-		FLearningAgentsObservationObjectElement LocationObject = ULearningAgentsObservations::MakeLocationAlongSplineObservation(InObservationObject, TrackSpline, sampleDistance, Transform, TEXT("LocationAlongSplineObservation"), isPlayerControlled, this, AgentId, locationAtDistanceAlongSpline, FLinearColor::Blue);
-		FLearningAgentsObservationObjectElement DirectionObject = ULearningAgentsObservations::MakeDirectionAlongSplineObservation(InObservationObject, TrackSpline, sampleDistance, Transform, TEXT("DirectionAlongSplineObservation"), isPlayerControlled, this, AgentId, locationAtDistanceAlongSpline, 100.0f, FLinearColor::Yellow);
+		FLearningAgentsObservationObjectElement LocationObject = ULearningAgentsObservations::MakeLocationAlongSplineObservation(InObservationObject, TrackSpline, SampleDistance, Transform, TEXT("LocationAlongSplineObservation"), bIsPlayerControlled, this, AgentId, LocationAtDistanceAlongSpline, FLinearColor::Blue);
+		FLearningAgentsObservationObjectElement DirectionObject = ULearningAgentsObservations::MakeDirectionAlongSplineObservation(InObservationObject, TrackSpline, SampleDistance, Transform, TEXT("DirectionAlongSplineObservation"), bIsPlayerControlled, this, AgentId, LocationAtDistanceAlongSpline, 100.0f, FLinearColor::Yellow);
 
 		ObjectMapping.Add(TEXT("Location"), LocationObject);
 		ObjectMapping.Add(TEXT("Direction"), DirectionObject);
 
 		FLearningAgentsObservationObjectElement TrackObject = ULearningAgentsObservations::MakeStructObservation(InObservationObject, ObjectMapping);
-		trackObservations.Add(TrackObject);
+		TrackObservations.Add(TrackObject);
 	}
-	FLearningAgentsObservationObjectElement TrackObject = ULearningAgentsObservations::MakeStaticArrayObservation(InObservationObject, trackObservations);
+	FLearningAgentsObservationObjectElement TrackObject = ULearningAgentsObservations::MakeStaticArrayObservation(InObservationObject, TrackObservations);
 
 	FVector Velocity = ObservationActor->GetVelocity();
 	FLearningAgentsObservationObjectElement VelocityObject = ULearningAgentsObservations::MakeVelocityObservation(InObservationObject, Velocity, Transform);

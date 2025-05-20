@@ -34,5 +34,5 @@ public:
 
 private:
 	UPROPERTY()
-	TArray<float> trackDistances = { 0.0f, 500.0f, 1000.0f, 1500.0f, 2000.0f, 2500.0f, 3000.0f }; // Distances to the next track points in centimeters
+	TArray<float> TrackDistances = { 0.0f, 500.0f, 1000.0f, 1500.0f, 2000.0f, 2500.0f, 3000.0f }; // Distances to the next track points in centimeters
 };
