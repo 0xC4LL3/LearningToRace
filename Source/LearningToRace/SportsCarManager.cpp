@@ -27,7 +27,11 @@ void ASportsCarManager::BeginPlay()
 
     ULearningAgentsManager* Manager = Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager;
 	Interactor = ULearningAgentsInteractor::MakeInteractor(Manager, USportsCarInteractor::StaticClass(), TEXT("SportsCarInteractor"));
+	Cast<USportsCarInteractor>(Interactor)->SportsCarManager = this;
+	Cast<USportsCarInteractor>(Interactor)->LearningAgentsManager = Manager;
 	Cast<USportsCarInteractor>(Interactor)->TrackSpline = TrackSpline;
+	Cast<USportsCarInteractor>(Interactor)->CollisionParams = FCollisionQueryParams::DefaultQueryParam;
+	Cast<USportsCarInteractor>(Interactor)->CollisionParams.AddIgnoredActors(CarActors);
 
 	Policy = ULearningAgentsPolicy::MakePolicy(Manager, Interactor, ULearningAgentsPolicy::StaticClass(), TEXT("SportsCarPolicy"), EncoderNetwork, PolicyNetwork, DecoderNetwork, !bShouldRunInference, !bShouldRunInference, !bShouldRunInference, PolicySettings);
 	if (bShouldRunInference)

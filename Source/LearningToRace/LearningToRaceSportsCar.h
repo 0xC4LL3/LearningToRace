@@ -20,6 +20,8 @@ class LEARNINGTORACE_API ALearningToRaceSportsCar : public ALearningToRacePawn
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Learning")
+	bool bHasCrashed = false;
 
 	ALearningToRaceSportsCar();
 
@@ -29,4 +31,8 @@ protected:
 
 public:
 	void ResetToRandomPointOnSpline(USplineComponent* TrackSpline);
+
+private:
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 };

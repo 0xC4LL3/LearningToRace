@@ -2,6 +2,7 @@
 
 
 #include "SportsCarInteractor.h"
+#include "SportsCarManager.h"
 
 void USportsCarInteractor::SpecifyAgentObservation_Implementation(FLearningAgentsObservationSchemaElement& OutObservationSchemaElement, ULearningAgentsObservationSchema* InObservationSchema)
 {
@@ -16,17 +17,27 @@ void USportsCarInteractor::SpecifyAgentObservation_Implementation(FLearningAgent
 	TrackSchema = ULearningAgentsObservations::SpecifyStaticArrayObservation(InObservationSchema, TrackSchema, TrackDistances.Num());
 	
 	FLearningAgentsObservationSchemaElement VelocitySchema = ULearningAgentsObservations::SpecifyVelocityObservation(InObservationSchema);
+	FLearningAgentsObservationSchemaElement VisionSchema = ULearningAgentsObservations::SpecifyLocationObservation(InObservationSchema);
+	VisionSchema = ULearningAgentsObservations::SpecifyStaticArrayObservation(InObservationSchema, VisionSchema, RaycastCount);
 
 	SchemaMapping.Empty();
 	SchemaMapping.Add(TEXT("Track"), TrackSchema);
 	SchemaMapping.Add(TEXT("Car"), VelocitySchema);
+	SchemaMapping.Add(TEXT("Vision"), VisionSchema);
 
 	OutObservationSchemaElement = ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, SchemaMapping);
+
+	FOVOffsets.SetNum(RaycastCount);
+	for (int i = 0; i < RaycastCount; ++i)
+	{
+		// Pre-calculate the relative yaw offset in degrees
+		FOVOffsets[i] = FOVStartAngle + i * FOVStep;
+	}
 }
 
 void USportsCarInteractor::GatherAgentObservation_Implementation(FLearningAgentsObservationObjectElement& OutObservationObjectElement, ULearningAgentsObservationObject* InObservationObject, const int32 AgentId)
 {
-	UObject* AgentObject = Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->GetAgent(AgentId);
+	UObject* AgentObject = LearningAgentsManager->GetAgent(AgentId);
 	ALearningToRaceSportsCar* ObservationActor = Cast<ALearningToRaceSportsCar>(AgentObject);
 	
 	TArray<FLearningAgentsObservationObjectElement> TrackObservations;
@@ -54,9 +65,42 @@ void USportsCarInteractor::GatherAgentObservation_Implementation(FLearningAgents
 	FVector Velocity = ObservationActor->GetVelocity();
 	FLearningAgentsObservationObjectElement VelocityObject = ULearningAgentsObservations::MakeVelocityObservation(InObservationObject, Velocity, Transform);
 
+	TArray<FLearningAgentsObservationObjectElement> VisionObservations;
+	FHitResult HitResult[RaycastCount];
+	for (int i = 0; i < RaycastCount; ++i)
+	{
+		// Compute the new ray direction based on the rotated vector and use it to get RayEnd
+		FRotator Rotation = ObservationActor->GetActorRotation();
+		Rotation.Yaw += FOVOffsets[i];
+		FVector RayDir = Rotation.Vector();
+		RayDir.Z = FMath::Max(0.0f, RayDir.Z); // Prevent looking into the ground while breaking
+		FVector RayEnd = Location + RayDir * RayLength;
+
+		// Perform the line trace
+		GetWorld()->LineTraceSingleByChannel(HitResult[i], Location, RayEnd, ECC_Visibility, CollisionParams);
+
+		if (HitResult[i].bBlockingHit)
+		{
+			FLearningAgentsObservationObjectElement VisionObject = ULearningAgentsObservations::MakeLocationObservation(InObservationObject, HitResult[i].ImpactPoint, Transform, TEXT("LocationObservation"), bIsPlayerControlled, this, AgentId, HitResult[i].ImpactPoint, FLinearColor::Green);
+			VisionObservations.Add(VisionObject);
+
+			if (bIsPlayerControlled) { UKismetSystemLibrary::DrawDebugLine(GetWorld(), Location, HitResult[i].ImpactPoint, FColor::Red); }
+		}
+		else
+		{
+			// If no hit, use the ray end point as the observation
+			FLearningAgentsObservationObjectElement VisionObject = ULearningAgentsObservations::MakeLocationObservation(InObservationObject, RayEnd, Transform, TEXT("LocationObservation"), bIsPlayerControlled, this, AgentId, RayEnd, FLinearColor::Green);
+			VisionObservations.Add(VisionObject);
+
+			if (bIsPlayerControlled) { UKismetSystemLibrary::DrawDebugLine(GetWorld(), Location, RayEnd, FColor::Red); }
+		}
+	}
+	FLearningAgentsObservationObjectElement VisionObject = ULearningAgentsObservations::MakeStaticArrayObservation(InObservationObject, VisionObservations);
+
 	ObjectMapping.Empty();
 	ObjectMapping.Add(TEXT("Track"), TrackObject);
 	ObjectMapping.Add(TEXT("Car"), VelocityObject);
+	ObjectMapping.Add(TEXT("Vision"), VisionObject);
 
 	OutObservationObjectElement = ULearningAgentsObservations::MakeStructObservation(InObservationObject, ObjectMapping);
 }
@@ -83,7 +127,7 @@ void USportsCarInteractor::PerformAgentAction_Implementation(const ULearningAgen
 	ULearningAgentsActions::GetFloatAction(SteeringAction, InActionObject, OutElements[TEXT("Steering")], TEXT("Steering"));
 	ULearningAgentsActions::GetFloatAction(ThrottleAction, InActionObject, OutElements[TEXT("ThrottleBrake")], TEXT("ThrottleBrake"));
 
-	UObject* AgentObject = Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->GetAgent(AgentId);
+	UObject* AgentObject = LearningAgentsManager->GetAgent(AgentId);
 	ALearningToRaceSportsCar* ActionActor = Cast<ALearningToRaceSportsCar>(AgentObject);
 	UChaosVehicleMovementComponent* VehicleMovementComponent = ActionActor->GetVehicleMovementComponent();
 

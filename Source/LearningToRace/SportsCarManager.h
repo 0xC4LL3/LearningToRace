@@ -51,13 +51,13 @@ public:
 	FFilePath PolicySnapshot;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	FFilePath DecoderSnapshot;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Learning")
+	TArray<AActor*> CarActors;
 
 	// Sets default values for this actor's properties
 	ASportsCarManager();
 
 private:
-	UPROPERTY()
-	TArray<AActor*> CarActors;
 	UPROPERTY()
 	USplineComponent* TrackSpline;
 	UPROPERTY()

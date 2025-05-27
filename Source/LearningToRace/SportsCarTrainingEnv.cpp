@@ -23,6 +23,12 @@ void USportsCarTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgents
 	UObject* AgentObject = Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->GetAgent(AgentId);
 	ALearningToRaceSportsCar* RewardActor = Cast<ALearningToRaceSportsCar>(AgentObject);
 
+	if (RewardActor->bHasCrashed)
+	{
+		OutCompletion = ULearningAgentsCompletions::MakeCompletion(ELearningAgentsCompletion::Termination);
+		return;
+	}
+
 	FVector ActorLocation = RewardActor->GetActorLocation();
 	FVector SplineLocation = TrackSpline->FindLocationClosestToWorldLocation(ActorLocation, ESplineCoordinateSpace::World);
 

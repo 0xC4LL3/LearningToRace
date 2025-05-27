@@ -74,6 +74,9 @@ void ALearningToRaceSportsCar::BeginPlay()
 	Super::BeginPlay();
 
 	Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->AddAgent(this);
+
+	// Set up the hit event for collision detection
+	GetMesh()->OnComponentHit.AddDynamic(this, &ALearningToRaceSportsCar::OnHit);
 }
 
 void ALearningToRaceSportsCar::ResetToRandomPointOnSpline(USplineComponent* TrackSpline)
@@ -109,4 +112,10 @@ void ALearningToRaceSportsCar::ResetToRandomPointOnSpline(USplineComponent* Trac
 	SetActorTransform(CandidateTransform, false, nullptr, ETeleportType::TeleportPhysics);
 	GetMesh()->SetPhysicsAngularVelocityInDegrees(FVector(0.0f, 0.0f, 0.0f), false, TEXT("None"));
 	GetMesh()->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, 0.0f), false, TEXT("None"));
+	bHasCrashed = false;
+}
+
+void ALearningToRaceSportsCar::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	bHasCrashed = true;
 }
