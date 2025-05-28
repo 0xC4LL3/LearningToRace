@@ -98,9 +98,7 @@ void ALearningToRaceSportsCar::ResetToRandomPointOnSpline(USplineComponent* Trac
 
 		CandidateTransform = UKismetMathLibrary::MakeTransform(SplineLocation + RandomOffset, FRotator(0.0f, SplineRotation.Yaw + RandomRotation, 0.0f));
 		bInvalidTransform = false;
-		TArray<AActor*> OutCars;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALearningToRaceSportsCar::StaticClass(), OutCars);
-		for (AActor* Car : OutCars)
+		for (AActor* Car : CarActors)
 		{
 			if (UKismetMathLibrary::Vector_Distance(CandidateTransform.GetLocation(), Car->GetActorLocation()) < 1500.0f)
 			{

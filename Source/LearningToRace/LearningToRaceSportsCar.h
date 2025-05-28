@@ -7,7 +7,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/SplineComponent.h"
-#include "LearningAgentsManager.h"
 #include "LearningToRaceGameMode.h"
 #include "LearningToRaceSportsCar.generated.h"
 
@@ -20,6 +19,8 @@ class LEARNINGTORACE_API ALearningToRaceSportsCar : public ALearningToRacePawn
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = "Learning")
+	TArray<AActor*> CarActors;
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Learning")
 	bool bHasCrashed = false;
 

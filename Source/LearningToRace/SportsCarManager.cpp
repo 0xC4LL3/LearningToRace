@@ -43,6 +43,7 @@ void ASportsCarManager::BeginPlay()
 
 	Critic = ULearningAgentsCritic::MakeCritic(Manager, Interactor, Policy, ULearningAgentsCritic::StaticClass(), TEXT("SportsCarCritic"), CriticNetwork, !bShouldRunInference, CriticSettings);
 	Environment = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(Manager, USportsCarTrainingEnv::StaticClass());
+	Cast<USportsCarTrainingEnv>(Environment)->LearningAgentsManager = Manager;
 	Cast<USportsCarTrainingEnv>(Environment)->TrackSpline = TrackSpline;
 
 	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess(TrainerProcessSettings, SharedMemoryCommunicatorSettings);
@@ -56,6 +57,7 @@ void ASportsCarManager::BeginPlay()
 
 	for (AActor* Car : CarActors)
 	{
+		Cast<ALearningToRaceSportsCar>(Car)->CarActors = CarActors;
 		Cast<ALearningToRaceSportsCar>(Car)->ResetToRandomPointOnSpline(TrackSpline);
 	}
 }

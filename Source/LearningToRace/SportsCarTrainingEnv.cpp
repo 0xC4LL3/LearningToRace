@@ -5,7 +5,7 @@
 
 void USportsCarTrainingEnv::GatherAgentReward_Implementation(float& OutReward, const int32 AgentId)
 {
-	UObject* AgentObject = Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->GetAgent(AgentId);
+	UObject* AgentObject = LearningAgentsManager->GetAgent(AgentId);
 	ALearningToRaceSportsCar* RewardActor = Cast<ALearningToRaceSportsCar>(AgentObject);
 
 	FVector ActorLocation = RewardActor->GetActorLocation();
@@ -20,7 +20,7 @@ void USportsCarTrainingEnv::GatherAgentReward_Implementation(float& OutReward, c
 
 void USportsCarTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion, const int32 AgentId)
 {
-	UObject* AgentObject = Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->GetAgent(AgentId);
+	UObject* AgentObject = LearningAgentsManager->GetAgent(AgentId);
 	ALearningToRaceSportsCar* RewardActor = Cast<ALearningToRaceSportsCar>(AgentObject);
 
 	if (RewardActor->bHasCrashed)
@@ -37,6 +37,6 @@ void USportsCarTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgents
 
 void USportsCarTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId)
 {
-	ALearningToRaceSportsCar* AgentActor = Cast<ALearningToRaceSportsCar>(Cast<ALearningToRaceGameMode>(UGameplayStatics::GetGameMode(this))->LearningAgentsManager->GetAgent(AgentId));
+	ALearningToRaceSportsCar* AgentActor = Cast<ALearningToRaceSportsCar>(LearningAgentsManager->GetAgent(AgentId));
 	AgentActor->ResetToRandomPointOnSpline(TrackSpline);
 }

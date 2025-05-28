@@ -21,6 +21,8 @@ class LEARNINGTORACE_API USportsCarTrainingEnv : public ULearningAgentsTrainingE
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
+	ULearningAgentsManager* LearningAgentsManager;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	USplineComponent* TrackSpline;
 
 	virtual void GatherAgentReward_Implementation(float& OutReward, const int32 AgentId) override;
