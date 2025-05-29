@@ -8,6 +8,6 @@ public class LearningToRace : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "ChaosVehicles", "PhysicsCore", "LearningAgents", "LearningTraining" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "Landscape", "InputCore", "EnhancedInput", "ChaosVehicles", "PhysicsCore", "LearningAgents", "LearningTraining" });
 	}
 }

@@ -17,21 +17,30 @@ void USportsCarInteractor::SpecifyAgentObservation_Implementation(FLearningAgent
 	TrackSchema = ULearningAgentsObservations::SpecifyStaticArrayObservation(InObservationSchema, TrackSchema, TrackDistances.Num());
 	
 	FLearningAgentsObservationSchemaElement VelocitySchema = ULearningAgentsObservations::SpecifyVelocityObservation(InObservationSchema);
-	FLearningAgentsObservationSchemaElement VisionSchema = ULearningAgentsObservations::SpecifyLocationObservation(InObservationSchema);
-	VisionSchema = ULearningAgentsObservations::SpecifyStaticArrayObservation(InObservationSchema, VisionSchema, RaycastCount);
+	FLearningAgentsObservationSchemaElement CollisionSchema = ULearningAgentsObservations::SpecifyLocationObservation(InObservationSchema);
+	FLearningAgentsObservationSchemaElement TerrainSchema = ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema);
+	CollisionSchema = ULearningAgentsObservations::SpecifyStaticArrayObservation(InObservationSchema, CollisionSchema, CollisionRaycastCount);
+	TerrainSchema = ULearningAgentsObservations::SpecifyStaticArrayObservation(InObservationSchema, TerrainSchema, TerrainRaycastCount);
 
 	SchemaMapping.Empty();
 	SchemaMapping.Add(TEXT("Track"), TrackSchema);
 	SchemaMapping.Add(TEXT("Car"), VelocitySchema);
-	SchemaMapping.Add(TEXT("Vision"), VisionSchema);
+	SchemaMapping.Add(TEXT("Collision"), CollisionSchema);
+	SchemaMapping.Add(TEXT("Terrain"), TerrainSchema);
 
 	OutObservationSchemaElement = ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, SchemaMapping);
 
-	FOVOffsets.SetNum(RaycastCount);
-	for (int i = 0; i < RaycastCount; ++i)
+	CollisionFOVOffsets.SetNum(CollisionRaycastCount);
+	for (int i = 0; i < CollisionRaycastCount; ++i)
 	{
 		// Pre-calculate the relative yaw offset in degrees
-		FOVOffsets[i] = FOVStartAngle + i * FOVStep;
+		CollisionFOVOffsets[i] = CollisionFOVStartAngle + i * CollisionFOVStep;
+	}
+	
+	TerrainFOVAngleOffsets.SetNum(TerrainRaycastCount / TerrainRayDistances.Num());
+	for (int i = 0; i < TerrainFOVAngleOffsets.Num(); ++i)
+	{
+		TerrainFOVAngleOffsets[i] = TerrainFOVStartAngle + i * TerrainFOVStep;
 	}
 }
 
@@ -65,42 +74,84 @@ void USportsCarInteractor::GatherAgentObservation_Implementation(FLearningAgents
 	FVector Velocity = ObservationActor->GetVelocity();
 	FLearningAgentsObservationObjectElement VelocityObject = ULearningAgentsObservations::MakeVelocityObservation(InObservationObject, Velocity, Transform);
 
-	TArray<FLearningAgentsObservationObjectElement> VisionObservations;
-	FHitResult HitResult[RaycastCount];
-	for (int i = 0; i < RaycastCount; ++i)
+	TArray<FLearningAgentsObservationObjectElement> CollisionObservations;
+	FHitResult CollisionHitResult;
+	for (int i = 0; i < CollisionRaycastCount; ++i)
 	{
 		// Compute the new ray direction based on the rotated vector and use it to get RayEnd
 		FRotator Rotation = ObservationActor->GetActorRotation();
-		Rotation.Yaw += FOVOffsets[i];
+		Rotation.Yaw += CollisionFOVOffsets[i];
 		FVector RayDir = Rotation.Vector();
 		RayDir.Z = FMath::Max(0.0f, RayDir.Z); // Prevent looking into the ground while breaking
-		FVector RayEnd = Location + RayDir * RayLength;
+		FVector RayEnd = Location + RayDir * CollisionRayLength;
 
 		// Perform the line trace
-		GetWorld()->LineTraceSingleByChannel(HitResult[i], Location, RayEnd, ECC_Visibility, CollisionParams);
+		GetWorld()->LineTraceSingleByChannel(CollisionHitResult, Location, RayEnd, ECC_Visibility, CollisionParams);
 
-		if (HitResult[i].bBlockingHit)
+		if (CollisionHitResult.bBlockingHit)
 		{
-			FLearningAgentsObservationObjectElement VisionObject = ULearningAgentsObservations::MakeLocationObservation(InObservationObject, HitResult[i].ImpactPoint, Transform, TEXT("LocationObservation"), bIsPlayerControlled, this, AgentId, HitResult[i].ImpactPoint, FLinearColor::Green);
-			VisionObservations.Add(VisionObject);
+			FLearningAgentsObservationObjectElement CollisionObject = ULearningAgentsObservations::MakeLocationObservation(InObservationObject, CollisionHitResult.ImpactPoint, Transform, TEXT("LocationObservation"), bIsPlayerControlled, this, AgentId, CollisionHitResult.ImpactPoint, FLinearColor::Green);
+			CollisionObservations.Add(CollisionObject);
 
-			if (bIsPlayerControlled) { UKismetSystemLibrary::DrawDebugLine(GetWorld(), Location, HitResult[i].ImpactPoint, FColor::Red); }
+			if (bIsPlayerControlled) { UKismetSystemLibrary::DrawDebugLine(GetWorld(), Location, CollisionHitResult.ImpactPoint, FColor::Red); }
 		}
 		else
 		{
 			// If no hit, use the ray end point as the observation
-			FLearningAgentsObservationObjectElement VisionObject = ULearningAgentsObservations::MakeLocationObservation(InObservationObject, RayEnd, Transform, TEXT("LocationObservation"), bIsPlayerControlled, this, AgentId, RayEnd, FLinearColor::Green);
-			VisionObservations.Add(VisionObject);
+			FLearningAgentsObservationObjectElement CollisionObject = ULearningAgentsObservations::MakeLocationObservation(InObservationObject, RayEnd, Transform, TEXT("LocationObservation"), bIsPlayerControlled, this, AgentId, RayEnd, FLinearColor::Green);
+			CollisionObservations.Add(CollisionObject);
 
 			if (bIsPlayerControlled) { UKismetSystemLibrary::DrawDebugLine(GetWorld(), Location, RayEnd, FColor::Red); }
 		}
 	}
-	FLearningAgentsObservationObjectElement VisionObject = ULearningAgentsObservations::MakeStaticArrayObservation(InObservationObject, VisionObservations);
+	FLearningAgentsObservationObjectElement CollisionObject = ULearningAgentsObservations::MakeStaticArrayObservation(InObservationObject, CollisionObservations);
+
+	TArray<FLearningAgentsObservationObjectElement> TerrainObservations;
+	FHitResult TerrainHitResult;
+	for (int i = 0; i < TerrainFOVAngleOffsets.Num(); ++i)
+	{
+		FRotator Rotation = ObservationActor->GetActorRotation();
+		Rotation.Yaw += TerrainFOVAngleOffsets[i];
+		for (int j = 0; j < TerrainRayDistances.Num(); ++j)
+		{
+			FVector RayEnd = Location + Rotation.Vector() * TerrainRayDistances[j];
+			RayEnd.Z = -1.0f;
+			GetWorld()->LineTraceSingleByChannel(TerrainHitResult, Location, RayEnd, ECC_Visibility, CollisionParams);
+			if (TerrainHitResult.bBlockingHit)
+			{
+				ALandscapeSplineActor* LandscapeSplineActor = Cast<ALandscapeSplineActor>(TerrainHitResult.HitObjectHandle.FetchActor());
+				if (LandscapeSplineActor)
+				{
+					//UMaterialInterface* SplineMaterial = LandscapeSplineActor->GetSplinesComponent()->GetSegments()[0]->SplineMeshes[0].Mesh->GetMaterial(0);
+					FLearningAgentsObservationObjectElement TerrainObject = ULearningAgentsObservations::MakeFloatObservation(InObservationObject, 1.0f, TEXT("FloatObservation"), bIsPlayerControlled, this, AgentId, TerrainHitResult.ImpactPoint, FLinearColor::Black);
+					TerrainObservations.Add(TerrainObject);
+
+					if (bIsPlayerControlled) { UKismetSystemLibrary::DrawDebugLine(GetWorld(), Location, TerrainHitResult.ImpactPoint, FColor::Black); }
+				}
+				else
+				{
+					FLearningAgentsObservationObjectElement TerrainObject = ULearningAgentsObservations::MakeFloatObservation(InObservationObject, 0.0f, TEXT("FloatObservation"), bIsPlayerControlled, this, AgentId, RayEnd, FLinearColor::Black);
+					TerrainObservations.Add(TerrainObject);
+
+					if (bIsPlayerControlled) { UKismetSystemLibrary::DrawDebugLine(GetWorld(), Location, TerrainHitResult.ImpactPoint, FColor::Black); }
+				}
+			}
+			else
+			{
+				FLearningAgentsObservationObjectElement TerrainObject = ULearningAgentsObservations::MakeFloatObservation(InObservationObject, 0.0f, TEXT("FloatObservation"), bIsPlayerControlled, this, AgentId, RayEnd, FLinearColor::Black);
+				TerrainObservations.Add(TerrainObject);
+				
+				if (bIsPlayerControlled) { UKismetSystemLibrary::DrawDebugLine(GetWorld(), Location, RayEnd, FColor::Black); }
+			}
+		}
+	}
+	FLearningAgentsObservationObjectElement TerrainObject = ULearningAgentsObservations::MakeStaticArrayObservation(InObservationObject, TerrainObservations);
 
 	ObjectMapping.Empty();
 	ObjectMapping.Add(TEXT("Track"), TrackObject);
 	ObjectMapping.Add(TEXT("Car"), VelocityObject);
-	ObjectMapping.Add(TEXT("Vision"), VisionObject);
+	ObjectMapping.Add(TEXT("Collision"), CollisionObject);
+	ObjectMapping.Add(TEXT("Terrain"), TerrainObject);
 
 	OutObservationObjectElement = ULearningAgentsObservations::MakeStructObservation(InObservationObject, ObjectMapping);
 }

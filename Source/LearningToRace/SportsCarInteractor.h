@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "LandscapeSplineActor.h"
+#include "LandscapeSplineSegment.h"
+#include "Components/SplineMeshComponent.h"
 #include "Components/SplineComponent.h"
 #include "Engine/World.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -46,10 +49,17 @@ private:
 	UPROPERTY()
 	TArray<float> TrackDistances = { 0.0f, 500.0f, 1000.0f, 1500.0f, 2000.0f, 2500.0f, 3000.0f }; // Distances to the next track points in centimeters
 
-	static const int RaycastCount = 11;
-	const float RayLength = 3000.0f;
-	const float FieldOfView = 120.0f;
-	const float FOVStartAngle = -FieldOfView / 2.0f;
-	const float FOVStep = FieldOfView / (RaycastCount - 1);
-	TArray<float> FOVOffsets;
+	static const int CollisionRaycastCount = 11;
+	const float CollisionRayLength = 3000.0f;
+	const float CollisionFieldOfView = 120.0f;
+	const float CollisionFOVStartAngle = -CollisionFieldOfView / 2.0f;
+	const float CollisionFOVStep = CollisionFieldOfView / (CollisionRaycastCount - 1);
+	TArray<float> CollisionFOVOffsets;
+
+	static const int TerrainRaycastCount = 49;
+	const TArray<float> TerrainRayDistances = { 100.0f, 500.0f, 1000.0f, 1500.0f, 2000.0f, 2500.0f, 3000.0f };
+	const float TerrainFieldOfView = 120.0f;
+	const float TerrainFOVStartAngle = -TerrainFieldOfView / 2.0f;
+	const float TerrainFOVStep = TerrainFieldOfView / (TerrainRaycastCount / 7 - 1);
+	TArray<float> TerrainFOVAngleOffsets;
 };
