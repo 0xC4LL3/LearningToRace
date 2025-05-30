@@ -56,10 +56,10 @@ private:
 	const float CollisionFOVStep = CollisionFieldOfView / (CollisionRaycastCount - 1);
 	TArray<float> CollisionFOVOffsets;
 
-	static const int TerrainRaycastCount = 49;
-	const TArray<float> TerrainRayDistances = { 100.0f, 500.0f, 1000.0f, 1500.0f, 2000.0f, 2500.0f, 3000.0f };
+	static const int TerrainRaycastCount = 600;
+	const TArray<float> TerrainRayDistances = { 100.0f, 200.0f, 300.0f, 400.0f, 500.0f, 600.0f, 700.0f, 800.0f, 900.0f, 1000.0f, 1100.0f, 1200.0f, 1300.0f, 1400.0f, 1500.0f, 1600.0f, 1700.0f, 1800.0f, 1900.0f, 2000.0f, 2100.0f, 2200.0f, 2300.0f, 2400.0f, 2500.0f, 2600.0f, 2700.0f, 2800.0f, 2900.0f, 3000.0f };
 	const float TerrainFieldOfView = 120.0f;
 	const float TerrainFOVStartAngle = -TerrainFieldOfView / 2.0f;
-	const float TerrainFOVStep = TerrainFieldOfView / (TerrainRaycastCount / 7 - 1);
+	const float TerrainFOVStep = TerrainFieldOfView / (TerrainRaycastCount / 30 - 1);
 	TArray<float> TerrainFOVAngleOffsets;
 };

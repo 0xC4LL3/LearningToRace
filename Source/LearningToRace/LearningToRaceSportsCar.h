@@ -22,6 +22,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = "Learning")
 	TArray<AActor*> CarActors;
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Learning")
+	bool bIsOffroad = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Learning")
 	bool bHasCrashed = false;
 
 	ALearningToRaceSportsCar();

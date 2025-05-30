@@ -15,9 +15,16 @@ void ASportsCarManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!bShouldRunInference) { bShouldSpawnClones = true; }
+
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALearningToRaceSportsCar::StaticClass(), CarActors);
 	for (AActor* Car : CarActors)
 	{
+		if (!Cast<ALearningToRaceSportsCar>(Car)->IsPlayerControlled() && !bShouldSpawnClones)
+		{
+			Car->Destroy();
+			continue;
+		}
 		AddTickPrerequisiteActor(Car);
 	}
 
@@ -58,7 +65,7 @@ void ASportsCarManager::BeginPlay()
 	for (AActor* Car : CarActors)
 	{
 		Cast<ALearningToRaceSportsCar>(Car)->CarActors = CarActors;
-		Cast<ALearningToRaceSportsCar>(Car)->ResetToRandomPointOnSpline(TrackSpline);
+		if (bShouldSpawnClones) { Cast<ALearningToRaceSportsCar>(Car)->ResetToRandomPointOnSpline(TrackSpline); }
 	}
 }
 
