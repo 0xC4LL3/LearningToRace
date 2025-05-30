@@ -1,1 +1,0 @@
-LearningToRace.exe VehicleExampleMap -nullrhi -nosound -log -log=car_learning.log

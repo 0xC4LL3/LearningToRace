@@ -1,0 +1,2 @@
+cd "C:\Users\Calle\Documents\Unreal Projects\LearningToRace\Intermediate\PipInstall\Scripts"
+.\tensorboard.exe --logdir="C:\Users\Calle\Documents\Unreal Projects\LearningToRace\Intermediate\LearningAgents\TensorBoard\runs"

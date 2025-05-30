@@ -1,0 +1,2 @@
+cd "C:\Users\Calle\Documents\Unreal Projects\LearningToRace\Saved\StagedBuilds\Windows\LearningToRace\Binaries\Win64"
+.\LearningToRace.exe VehicleExampleMap -nullrhi -nosound -log -log=car_learning.log
