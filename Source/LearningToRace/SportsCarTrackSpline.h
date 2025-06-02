@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2025 0xC4LL3. Licensed under the MIT License. See LICENSE file for details.
 
 #pragma once
 
