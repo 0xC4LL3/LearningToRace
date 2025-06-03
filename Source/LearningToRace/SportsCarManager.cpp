@@ -36,7 +36,6 @@ void ASportsCarManager::BeginPlay()
 	Interactor = ULearningAgentsInteractor::MakeInteractor(Manager, USportsCarInteractor::StaticClass(), TEXT("SportsCarInteractor"));
 	Cast<USportsCarInteractor>(Interactor)->SportsCarManager = this;
 	Cast<USportsCarInteractor>(Interactor)->LearningAgentsManager = Manager;
-	Cast<USportsCarInteractor>(Interactor)->TrackSpline = TrackSpline;
 	Cast<USportsCarInteractor>(Interactor)->CollisionParams = FCollisionQueryParams::DefaultQueryParam;
 	Cast<USportsCarInteractor>(Interactor)->CollisionParams.AddIgnoredActors(CarActors);
 

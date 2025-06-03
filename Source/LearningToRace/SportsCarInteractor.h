@@ -29,8 +29,6 @@ class LEARNINGTORACE_API USportsCarInteractor : public ULearningAgentsInteractor
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
-	USplineComponent* TrackSpline;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	ASportsCarManager* SportsCarManager;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Learning")
 	ULearningAgentsManager* LearningAgentsManager;

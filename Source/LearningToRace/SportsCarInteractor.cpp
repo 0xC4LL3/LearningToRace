@@ -57,12 +57,16 @@ void USportsCarInteractor::GatherAgentObservation_Implementation(FLearningAgents
 					TrackLimit = TerrainHitResult.ImpactPoint;
 
 					if (j == 0 && ObservationActor->bIsOffroad) { ObservationActor->bIsOffroad = false; }
+
+					if (ObservationActor->bIsOffroad) break;
 				}
 				else
 				{
 					if (j == 0 && !ObservationActor->bIsOffroad) { ObservationActor->bIsOffroad = true; }
 
-					break;
+					if (!ObservationActor->bIsOffroad) break;
+
+					TrackLimit = TerrainHitResult.ImpactPoint;
 				}
 			}
 		}
